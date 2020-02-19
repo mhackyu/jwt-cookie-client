@@ -1,42 +1,99 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <i>NOTE: Open the browser console to check all the logs.</i>
+    <div v-if="isLoggedIn">
+      <p>Account is already logged in.</p>
+      <button @click="logout">Logout</button>
+      <button @click="verify">Verify</button> <br />
+      <button @click="getCookies">Get all Cookies</button> <br />
+      <strong>Account Info</strong>
+      <p>ID: {{ user.id }}</p>
+      <p>EMAIL: {{ user.email }}</p>
+    </div>
+    <div v-else>
+      <p>Please login</p>
+      <input type="email" placeholder="email" required v-model="email"/> <br/>
+      <input type="password" placeholder="password" v-model="password" required/> <br/>
+      <button v-if="!isLoggedIn" @click="login">Login</button>
+      <br />
+    </div>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+const http = axios.create({
+  baseURL: "http://localhost:3000",
+  withCredentials: true
+});
+
 export default {
-  name: 'HelloWorld',
+  name: "HelloWorld",
+  data() {
+    return {
+      email: "admin@email.com",
+      password: "P@ssw0rd",
+      isLoggedIn: false,
+      user: {}
+    };
+  },
   props: {
     msg: String
+  },
+  mounted() {
+    console.log("Client is creating a new cookie");
+    document.cookie = "test1=Hello";
+    console.log("Client created a new cookie");
+    this.verify();
+  },
+  methods: {
+    login() {
+      http
+        .post("/login", {
+          email: this.email,
+          password: this.password
+        })
+        .then(result => {
+          this.isLoggedIn = true;
+          console.log(result);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    verify() {
+      http
+        .get("/verify")
+        .then(result => {
+          if (result.data.user) {
+            this.isLoggedIn = true;
+          }
+          this.user = result.data.user;
+          console.log(result);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    logout() {
+      http
+        .post("/logout")
+        .then(result => {
+          this.isLoggedIn = false;
+          this.user = {}
+          console.log(result);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    getCookies() {
+      console.log("All cookies in client: ", document.cookie);
+      alert(`Cookies ${document.cookie}`);
+    }
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
