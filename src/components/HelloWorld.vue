@@ -9,7 +9,6 @@
       <button @click="getCookies">Get all Cookies</button> <br />
       <strong>Account Info</strong>
       <p>ID: {{ user.id }}</p>
-      <p>EMAIL: {{ user.email }}</p>
     </div>
     <div v-else>
       <p>Please login</p>
